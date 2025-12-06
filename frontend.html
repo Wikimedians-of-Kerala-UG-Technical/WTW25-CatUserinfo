@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Wikimedia Commons Filter</title>
+<style>
+  body { font-family: sans-serif; padding: 20px; }
+  input { padding: 5px; margin-right: 10px; }
+  button { padding: 5px 10px; }
+  #results { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 20px; }
+  .file-item { border: 1px solid #ccc; padding: 10px; width: 200px; text-align: center; }
+  img { max-width: 100%; height: auto; display: block; margin-bottom: 5px; }
+</style>
+</head>
+<body>
+
+<h1>Filter Wikimedia Commons Files by User & Category</h1>
+
+<input type="text" id="usernameInput" placeholder="Enter username"/>
+<input type="text" id="categoryInput" placeholder="Enter category"/>
+<button id="filterBtn">Filter</button>
+
+<div id="results"></div>
+
+<script>
+// Fetch files uploaded by a user
+async function fetchUserFiles(username) {
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&list=allimages&formatversion=2&aisort=timestamp&aidir=descending&aiuser=${encodeURIComponent(username)}&ailimit=500&origin=*`;
+  const resp = await fetch(url);
+  const data = await resp.json();
+  console.log('User files response:', data);
+  // Map each image to {name: filename}
+  return (data.query?.allimages || []).map(img => ({ name: img.title || img.name }));
+}
+
+// Fetch categories for a specific file
+async function fetchFileCategories(filename) {
+  // Ensure filename has "File:" prefix if not present
+  const fileTitle = filename.startsWith('File:') ? filename : `File:${filename}`;
+  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=categories&format=json&formatversion=2&origin=*`;
+  console.log('Fetching categories for:', fileTitle, 'URL:', url);
+  try {
+    const resp = await fetch(url);
+    const data = await resp.json();
+    console.log('Categories response:', data);
+    
+    if (data.query?.pages && data.query.pages.length > 0) {
+      const page = data.query.pages[0];
+      if (page.categories) {
+        return page.categories.map(c => c.title.replace(/^Category:/, ''));
+      }
+    }
+    return [];
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    return [];
+  }
+}
+
+// Get file thumbnail URL
+function getFileThumbnail(filename) {
+  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
+}
+
+// Handle filter button click
+document.getElementById('filterBtn').addEventListener('click', async () => {
+  const username = document.getElementById('usernameInput').value.trim();
+  const category = document.getElementById('categoryInput').value.trim().toLowerCase();
+  const resultsDiv = document.getElementById('results');
+  resultsDiv.innerHTML = 'Loading...';
+
+  try {
+    const files = await fetchUserFiles(username);
+
+    if (files.length === 0) {
+      resultsDiv.innerHTML = 'No files uploaded by this user.';
+      return;
+    }
+
+    // Fetch categories for all files in parallel
+    const filesWithCats = await Promise.all(files.map(async file => {
+        console.log(file.name);
+      const categories = await fetchFileCategories(file.name);
+      return { name: file.name, categories, url: getFileThumbnail(file.name) };
+    }));
+
+    // Filter files by category input
+    const filteredFiles = filesWithCats.filter(f =>
+      f.categories.some(c => c.toLowerCase().includes(category))
+    );
+
+    if (filteredFiles.length === 0) {
+      resultsDiv.innerHTML = 'No matching files found.';
+      return;
+    }
+
+    // Display results
+    resultsDiv.innerHTML = '';
+    filteredFiles.forEach(f => {
+      const div = document.createElement('div');
+      div.className = 'file-item';
+      div.innerHTML = `
+        <img src="${f.url}" alt="${f.name}"/>
+        <strong>${f.name}</strong>
+        <p>Categories: ${f.categories.join(', ')}</p>
+      `;
+      resultsDiv.appendChild(div);
+    });
+
+  } catch (err) {
+    resultsDiv.innerHTML = 'Error fetching data.';
+    console.error(err);
+  }
+});
+</script>
+
+</body>
+</html>
