@@ -1,118 +1,330 @@
 <!DOCTYPE html>
 <html>
+
 <head>
-<meta charset="utf-8">
-<title>Wikimedia Commons Filter</title>
-<style>
-  body { font-family: sans-serif; padding: 20px; }
-  input { padding: 5px; margin-right: 10px; }
-  button { padding: 5px 10px; }
-  #results { margin-top: 20px; display: flex; flex-wrap: wrap; gap: 20px; }
-  .file-item { border: 1px solid #ccc; padding: 10px; width: 200px; text-align: center; }
-  img { max-width: 100%; height: auto; display: block; margin-bottom: 5px; }
-</style>
+  <!-- Wikimedia Commons Favicon -->
+  <link rel="icon" type="image/png"
+    href="https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Commons-logo.svg/128px-Commons-logo.svg.png">
+
+  <link rel="icon" type="image/svg+xml" href="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg">
+
+  <meta charset="utf-8">
+  <title>Wikimedia Commons Filter</title>
+
+  <style>
+    /* ------------------------------
+      Layout Fix for Footer Position
+    -------------------------------*/
+    html,
+    body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .main-wrapper {
+      flex: 1;
+    }
+
+    /* ------------------------------
+      Modern UI Styles
+    -------------------------------*/
+    :root {
+      --bg: linear-gradient(135deg, #e3eeff, #f5f7ff);
+      --text: #1c2942;
+      --card: rgba(255, 255, 255, 0.72);
+      --input: rgba(255, 255, 255, 0.85);
+      --accent: #4a6bff;
+      --accent-glow: #7ea0ff;
+    }
+
+    body.dark {
+      --bg: linear-gradient(135deg, #0b0f18, #151b28);
+      --text: #e2e8ff;
+      --card: rgba(28, 34, 48, 0.7);
+      --input: rgba(32, 38, 52, 0.85);
+      --accent: #6f8cff;
+      --accent-glow: #a3c0ff;
+    }
+
+    body {
+      background: var(--bg);
+      font-family: "Segoe UI", sans-serif;
+      color: var(--text);
+      padding: 40px 20px;
+      transition: 0.3s;
+    }
+
+    h1 {
+      text-align: center;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 18px;
+    }
+
+    .toggle {
+      text-align: center;
+      cursor: pointer;
+      margin-bottom: 20px;
+      font-size: 15px;
+      opacity: 0.8;
+    }
+
+    .toggle:hover {
+      opacity: 1;
+    }
+
+    .commons-logo-box {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    /* Clean logo with no white background */
+    .commons-logo {
+      width: 95px;
+      height: 95px;
+
+      background: transparent;
+      /* NO WHITE SPACE */
+      padding: 0;
+      border: none;
+
+      /* Soft glow for visibility */
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.65));
+      transition: 0.3s ease-in-out;
+    }
+
+    /* Hover effect */
+    .commons-logo:hover {
+      transform: scale(1.07);
+      filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
+    }
+
+    /* Stronger glow in dark mode */
+    body.dark .commons-logo {
+      filter: drop-shadow(0 0 10px rgba(180, 200, 255, 0.75));
+    }
+
+    .search-card {
+      max-width: 750px;
+      margin: auto;
+      padding: 22px;
+      border-radius: 18px;
+      background: var(--card);
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.18);
+    }
+
+    .search-box {
+      max-width: 420px;
+      margin: auto;
+      padding: 25px;
+      background: rgba(255, 255, 255, 0.8);
+      border-radius: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    body.dark .search-box {
+      background: rgba(25, 35, 50, 0.65);
+    }
+
+    .input-group input {
+      width: 100%;
+      padding: 14px;
+      border-radius: 10px;
+      border: 1px solid #cfd6e4;
+    }
+
+    body.dark .input-group input {
+      background: #111a26;
+      border: 1px solid #2d3b4d;
+      color: #dbe9ff;
+    }
+
+    button {
+      padding: 14px;
+      background: var(--accent);
+      border: none;
+      border-radius: 10px;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      box-shadow: 0 0 12px var(--accent-glow);
+    }
+
+    #results {
+      margin-top: 35px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 28px;
+      max-width: 1300px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .file-item {
+      background: var(--card);
+      padding: 15px;
+      border-radius: 16px;
+      text-align: center;
+      box-shadow: 0 8px 26px rgba(0, 0, 0, 0.15);
+    }
+
+    img {
+      width: 100%;
+      height: 170px;
+      object-fit: cover;
+      border-radius: 12px;
+    }
+
+    .download-btn {
+      display: block;
+      margin-top: 12px;
+      padding: 10px;
+      background: #3477ff;
+      color: white;
+      text-decoration: none;
+      border-radius: 8px;
+      font-weight: bold;
+    }
+
+    .download-btn:hover {
+      background: #2559c7;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      margin-top: 40px;
+      padding: 25px;
+      background: var(--card);
+      border-radius: 16px 16px 0 0;
+    }
+  </style>
 </head>
+
 <body>
 
-<h1>Filter Wikimedia Commons Files by User & Category</h1>
+  <div class="main-wrapper">
 
-<input type="text" id="usernameInput" placeholder="Enter username"/>
-<input type="text" id="categoryInput" placeholder="Enter category"/>
-<button id="filterBtn">Filter</button>
+    <div class="commons-logo-box">
+      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" class="commons-logo">
+    </div>
 
-<div id="results"></div>
+    <div class="toggle" onclick="toggleDarkMode()">🌙 Dark Mode</div>
 
-<script>
-// Fetch files uploaded by a user
-async function fetchUserFiles(username) {
-  const url = `https://commons.wikimedia.org/w/api.php?action=query&format=json&list=allimages&formatversion=2&aisort=timestamp&aidir=descending&aiuser=${encodeURIComponent(username)}&ailimit=500&origin=*`;
-  const resp = await fetch(url);
-  const data = await resp.json();
-  console.log('User files response:', data);
-  // Map each image to {name: filename}
-  return (data.query?.allimages || []).map(img => ({ name: img.title || img.name }));
-}
+    <h1>Wiki Fetch</h1>
 
-// Fetch categories for a specific file
-async function fetchFileCategories(filename) {
-  // Ensure filename has "File:" prefix if not present
-  const fileTitle = filename.startsWith('File:') ? filename : `File:${filename}`;
-  const url = `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=categories&format=json&formatversion=2&origin=*`;
-  console.log('Fetching categories for:', fileTitle, 'URL:', url);
-  try {
-    const resp = await fetch(url);
-    const data = await resp.json();
-    console.log('Categories response:', data);
-    
-    if (data.query?.pages && data.query.pages.length > 0) {
-      const page = data.query.pages[0];
-      if (page.categories) {
-        return page.categories.map(c => c.title.replace(/^Category:/, ''));
+    <div class="search-card">
+      <div class="search-box">
+
+        <div class="input-group">
+          <input type="text" id="usernameInput" placeholder="Enter username…">
+        </div>
+
+        <div class="input-group">
+          <input type="text" id="categoryInput" placeholder="Enter category…">
+        </div>
+
+        <button id="filterBtn">Search</button>
+
+      </div>
+    </div>
+
+    <div id="results"></div>
+
+  </div> <!-- END main-wrapper -->
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>© 2025 Wikimedia Commons File Filter Tool</p>
+    <p>Developed by Binto, Ardra, Amal, Alphonsa • Powered by Wikimedia Commons API</p>
+  </footer>
+
+  <!-- JS (UNCHANGED) -->
+  <script>
+    async function fetchUserFiles(username) {
+      const url =
+        `https://commons.wikimedia.org/w/api.php?action=query&format=json&list=allimages&formatversion=2&aisort=timestamp&aidir=descending&aiuser=${encodeURIComponent(username)}&ailimit=500&origin=*`;
+      const resp = await fetch(url);
+      const data = await resp.json();
+      return (data.query?.allimages || []).map(img => ({ name: img.title || img.name }));
+    }
+
+    async function fetchFileCategories(filename) {
+      const fileTitle = filename.startsWith("File:") ? filename : `File:${filename}`;
+      const url =
+        `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=categories&format=json&formatversion=2&origin=*`;
+
+      try {
+        const resp = await fetch(url);
+        const data = await resp.json();
+        if (data.query?.pages?.length > 0) {
+          const page = data.query.pages[0];
+          return page.categories?.map(c => c.title.replace("Category:", "")) || [];
+        }
+        return [];
+      } catch {
+        return [];
       }
     }
-    return [];
-  } catch (error) {
-    console.error('Error fetching categories:', error);
-    return [];
-  }
-}
 
-// Get file thumbnail URL
-function getFileThumbnail(filename) {
-  return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
-}
-
-// Handle filter button click
-document.getElementById('filterBtn').addEventListener('click', async () => {
-  const username = document.getElementById('usernameInput').value.trim();
-  const category = document.getElementById('categoryInput').value.trim().toLowerCase();
-  const resultsDiv = document.getElementById('results');
-  resultsDiv.innerHTML = 'Loading...';
-
-  try {
-    const files = await fetchUserFiles(username);
-
-    if (files.length === 0) {
-      resultsDiv.innerHTML = 'No files uploaded by this user.';
-      return;
+    function getFileThumbnail(filename) {
+      return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
     }
 
-    // Fetch categories for all files in parallel
-    const filesWithCats = await Promise.all(files.map(async file => {
-        console.log(file.name);
-      const categories = await fetchFileCategories(file.name);
-      return { name: file.name, categories, url: getFileThumbnail(file.name) };
-    }));
-
-    // Filter files by category input
-    const filteredFiles = filesWithCats.filter(f =>
-      f.categories.some(c => c.toLowerCase().includes(category))
-    );
-
-    if (filteredFiles.length === 0) {
-      resultsDiv.innerHTML = 'No matching files found.';
-      return;
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
     }
 
-    // Display results
-    resultsDiv.innerHTML = '';
-    filteredFiles.forEach(f => {
-      const div = document.createElement('div');
-      div.className = 'file-item';
-      div.innerHTML = `
-        <img src="${f.url}" alt="${f.name}"/>
-        <strong>${f.name}</strong>
-        <p>Categories: ${f.categories.join(', ')}</p>
-      `;
-      resultsDiv.appendChild(div);
+    document.getElementById("filterBtn").addEventListener("click", async () => {
+      const username = document.getElementById("usernameInput").value.trim();
+      const category = document.getElementById("categoryInput").value.trim().toLowerCase();
+      const resultsDiv = document.getElementById("results");
+
+      resultsDiv.innerHTML = "Loading...";
+
+      const files = await fetchUserFiles(username);
+      if (!files.length) return resultsDiv.innerHTML = "No files uploaded by this user.";
+
+      const filesWithCats = await Promise.all(
+        files.map(async f => ({
+          name: f.name,
+          categories: await fetchFileCategories(f.name),
+          url: getFileThumbnail(f.name)
+        }))
+      );
+
+      const filtered = filesWithCats.filter(f =>
+        f.categories.some(c => c.toLowerCase().includes(category))
+      );
+
+      if (!filtered.length) return resultsDiv.innerHTML = "No matching files found.";
+
+      resultsDiv.innerHTML = "";
+      filtered.forEach(f => {
+        const card = document.createElement("div");
+        card.className = "file-item";
+        card.innerHTML = `
+          <img src="${f.url}">
+          <strong>${f.name}</strong>
+          <p>Categories: ${f.categories.join(", ")}</p>
+          <a href="${f.url}" target="_blank" class="download-btn">👁️ View</a>
+        `;
+        resultsDiv.appendChild(card);
+      });
     });
-
-  } catch (err) {
-    resultsDiv.innerHTML = 'Error fetching data.';
-    console.error(err);
-  }
-});
-</script>
+  </script>
 
 </body>
+
 </html>
