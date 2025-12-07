@@ -12,9 +12,6 @@
   <title>Wikimedia Commons Filter</title>
 
   <style>
-    /* ------------------------------
-      Layout Fix for Footer Position
-    -------------------------------*/
     html,
     body {
       height: 100%;
@@ -22,37 +19,23 @@
       padding: 0;
     }
 
-    body {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .main-wrapper {
-      flex: 1;
-    }
-
-    /* ------------------------------
-      Modern UI Styles
-    -------------------------------*/
     :root {
       --bg: linear-gradient(135deg, #e3eeff, #f5f7ff);
       --text: #1c2942;
       --card: rgba(255, 255, 255, 0.72);
-      --input: rgba(255, 255, 255, 0.85);
       --accent: #4a6bff;
-      --accent-glow: #7ea0ff;
     }
 
     body.dark {
       --bg: linear-gradient(135deg, #0b0f18, #151b28);
       --text: #e2e8ff;
       --card: rgba(28, 34, 48, 0.7);
-      --input: rgba(32, 38, 52, 0.85);
       --accent: #6f8cff;
-      --accent-glow: #a3c0ff;
     }
 
     body {
+      display: flex;
+      flex-direction: column;
       background: var(--bg);
       font-family: "Segoe UI", sans-serif;
       color: var(--text);
@@ -60,56 +43,33 @@
       transition: 0.3s;
     }
 
+    /* Logo */
+    .commons-logo {
+      width: 95px;
+      height: 95px;
+      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.65));
+      transition: 0.3s ease;
+    }
+
+    .commons-logo:hover {
+      transform: scale(1.05);
+    }
+
+    /* Page Title & Theme Toggle */
     h1 {
       text-align: center;
       font-size: 36px;
       font-weight: 700;
-      margin-bottom: 18px;
     }
 
     .toggle {
       text-align: center;
       cursor: pointer;
-      margin-bottom: 20px;
-      font-size: 15px;
       opacity: 0.8;
+      margin-bottom: 15px;
     }
 
-    .toggle:hover {
-      opacity: 1;
-    }
-
-    .commons-logo-box {
-      text-align: center;
-      margin-top: 10px;
-    }
-
-    /* Clean logo with no white background */
-    .commons-logo {
-      width: 95px;
-      height: 95px;
-
-      background: transparent;
-      /* NO WHITE SPACE */
-      padding: 0;
-      border: none;
-
-      /* Soft glow for visibility */
-      filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.65));
-      transition: 0.3s ease-in-out;
-    }
-
-    /* Hover effect */
-    .commons-logo:hover {
-      transform: scale(1.07);
-      filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.8));
-    }
-
-    /* Stronger glow in dark mode */
-    body.dark .commons-logo {
-      filter: drop-shadow(0 0 10px rgba(180, 200, 255, 0.75));
-    }
-
+    /* Search Box */
     .search-card {
       max-width: 750px;
       margin: auto;
@@ -123,7 +83,7 @@
       max-width: 420px;
       margin: auto;
       padding: 25px;
-      background: rgba(255, 255, 255, 0.8);
+      background: rgba(255, 255, 255, 0.9);
       border-radius: 14px;
       display: flex;
       flex-direction: column;
@@ -134,41 +94,32 @@
       background: rgba(25, 35, 50, 0.65);
     }
 
-    .input-group input {
+    input {
       width: 100%;
       padding: 14px;
       border-radius: 10px;
       border: 1px solid #cfd6e4;
     }
 
-    body.dark .input-group input {
-      background: #111a26;
-      border: 1px solid #2d3b4d;
-      color: #dbe9ff;
-    }
-
     button {
       padding: 14px;
       background: var(--accent);
+      color: white;
       border: none;
       border-radius: 10px;
-      color: white;
-      font-size: 15px;
       cursor: pointer;
+      font-size: 16px;
     }
 
-    button:hover {
-      box-shadow: 0 0 12px var(--accent-glow);
-    }
-
+    /* Results Grid */
     #results {
       margin-top: 35px;
+      padding-bottom: 40px;
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
       gap: 28px;
       max-width: 1300px;
-      margin-left: auto;
-      margin-right: auto;
+      margin-inline: auto;
     }
 
     .file-item {
@@ -179,11 +130,12 @@
       box-shadow: 0 8px 26px rgba(0, 0, 0, 0.15);
     }
 
-    img {
+    /* FIXED IMAGE SIZE */
+    .file-item img {
       width: 100%;
-      height: 170px;
+      aspect-ratio: 4/3;
       object-fit: cover;
-      border-radius: 12px;
+      border-radius: 14px;
     }
 
     .download-btn {
@@ -192,69 +144,92 @@
       padding: 10px;
       background: #3477ff;
       color: white;
-      text-decoration: none;
       border-radius: 8px;
-      font-weight: bold;
+      text-decoration: none;
     }
 
-    .download-btn:hover {
-      background: #2559c7;
+    /* Autocomplete Dropdown */
+    .autocomplete-box {
+      position: absolute;
+      background: white;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      z-index: 2000;
+      max-height: 220px;
+      overflow-y: auto;
+      display: none;
+    }
+
+    .autocomplete-item {
+      padding: 10px;
+      cursor: pointer;
+    }
+
+    .autocomplete-item:hover {
+      background: #e8f0ff;
+    }
+
+    body.dark .autocomplete-box {
+      background: #1c2435;
+      border-color: #2d3b4d;
+      color: white;
+    }
+
+    body.dark .autocomplete-item:hover {
+      background: #2d3b4d;
     }
 
     /* Footer */
-    .footer {
+    footer {
       text-align: center;
       margin-top: 40px;
-      padding: 25px;
-      background: var(--card);
-      border-radius: 16px 16px 0 0;
     }
   </style>
 </head>
 
 <body>
 
-  <div class="main-wrapper">
+  <div style="text-align:center;">
+    <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" class="commons-logo">
+  </div>
 
-    <div class="commons-logo-box">
-      <img src="https://upload.wikimedia.org/wikipedia/commons/4/4a/Commons-logo.svg" class="commons-logo">
+  <div class="toggle" onclick="toggleDarkMode()">🌙 Dark Mode</div>
+
+  <h1>Wiki Fetch</h1>
+
+  <div class="search-card">
+    <div class="search-box">
+
+      <input type="text" id="usernameInput" placeholder="Enter username…">
+      <input type="text" id="categoryInput" placeholder="Enter category…">
+
+      <button id="filterBtn">Search</button>
+
     </div>
+  </div>
 
-    <div class="toggle" onclick="toggleDarkMode()">🌙 Dark Mode</div>
+  <div id="results"></div>
 
-    <h1>Wiki Fetch</h1>
-
-    <div class="search-card">
-      <div class="search-box">
-
-        <div class="input-group">
-          <input type="text" id="usernameInput" placeholder="Enter username…">
-        </div>
-
-        <div class="input-group">
-          <input type="text" id="categoryInput" placeholder="Enter category…">
-        </div>
-
-        <button id="filterBtn">Search</button>
-
-      </div>
-    </div>
-
-    <div id="results"></div>
-
-  </div> <!-- END main-wrapper -->
-
-  <!-- FOOTER -->
-  <footer class="footer">
+  <footer>
     <p>© 2025 Wikimedia Commons File Filter Tool</p>
     <p>Developed by Binto, Ardra, Amal, Alphonsa • Powered by Wikimedia Commons API</p>
   </footer>
 
-  <!-- JS (UNCHANGED) -->
   <script>
+    /* ==========================
+       DARK MODE
+    =========================== */
+    function toggleDarkMode() {
+      document.body.classList.toggle("dark");
+    }
+
+    /* ==========================
+       FETCH USER UPLOADED FILES
+    =========================== */
     async function fetchUserFiles(username) {
       const url =
         `https://commons.wikimedia.org/w/api.php?action=query&format=json&list=allimages&formatversion=2&aisort=timestamp&aidir=descending&aiuser=${encodeURIComponent(username)}&ailimit=500&origin=*`;
+
       const resp = await fetch(url);
       const data = await resp.json();
       return (data.query?.allimages || []).map(img => ({ name: img.title || img.name }));
@@ -265,27 +240,84 @@
       const url =
         `https://commons.wikimedia.org/w/api.php?action=query&titles=${encodeURIComponent(fileTitle)}&prop=categories&format=json&formatversion=2&origin=*`;
 
-      try {
-        const resp = await fetch(url);
-        const data = await resp.json();
-        if (data.query?.pages?.length > 0) {
-          const page = data.query.pages[0];
-          return page.categories?.map(c => c.title.replace("Category:", "")) || [];
-        }
-        return [];
-      } catch {
-        return [];
-      }
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      if (!data.query?.pages) return [];
+      return data.query.pages[0].categories?.map(c => c.title.replace("Category:", "")) || [];
     }
 
     function getFileThumbnail(filename) {
       return `https://commons.wikimedia.org/wiki/Special:FilePath/${encodeURIComponent(filename)}`;
     }
 
-    function toggleDarkMode() {
-      document.body.classList.toggle("dark");
+    /* ==========================
+       AUTOCOMPLETE SYSTEM
+    =========================== */
+    function setupAutocomplete(inputElement, fetchFunction) {
+      const dropdown = document.createElement("div");
+      dropdown.className = "autocomplete-box";
+      document.body.appendChild(dropdown);
+
+      inputElement.addEventListener("input", async () => {
+        const query = inputElement.value.trim();
+        if (query.length < 2) {
+          dropdown.style.display = "none";
+          return;
+        }
+
+        const suggestions = await fetchFunction(query);
+        dropdown.innerHTML = "";
+
+        suggestions.forEach(s => {
+          const div = document.createElement("div");
+          div.className = "autocomplete-item";
+          div.textContent = s;
+          div.onclick = () => {
+            inputElement.value = s;
+            dropdown.style.display = "none";
+          };
+          dropdown.appendChild(div);
+        });
+
+        const rect = inputElement.getBoundingClientRect();
+        dropdown.style.left = rect.left + "px";
+        dropdown.style.top = rect.bottom + window.scrollY + "px";
+        dropdown.style.width = rect.width + "px";
+        dropdown.style.display = "block";
+      });
+
+      document.addEventListener("click", (e) => {
+        if (e.target !== inputElement) dropdown.style.display = "none";
+      });
     }
 
+    async function fetchUserSuggestions(query) {
+      const url =
+        `https://commons.wikimedia.org/w/api.php?action=query&list=allusers&auprefix=${encodeURIComponent(query)}&aulimit=20&format=json&origin=*`;
+
+      const resp = await fetch(url);
+      const data = await resp.json();
+      return data.query?.allusers?.map(u => u.name) || [];
+    }
+
+    async function fetchCategorySuggestions(query) {
+      const url =
+        `https://commons.wikimedia.org/w/api.php?action=query&list=allcategories&acprefix=${encodeURIComponent(query)}&aclimit=20&format=json&origin=*`;
+
+      const resp = await fetch(url);
+      const data = await resp.json();
+
+      /* FIXED FIELD: c["*"] */
+      return data.query?.allcategories?.map(c => c["*"]) || [];
+    }
+
+    setupAutocomplete(document.getElementById("usernameInput"), fetchUserSuggestions);
+    setupAutocomplete(document.getElementById("categoryInput"), fetchCategorySuggestions);
+
+    /* ==========================
+       SEARCH BUTTON
+    =========================== */
     document.getElementById("filterBtn").addEventListener("click", async () => {
       const username = document.getElementById("usernameInput").value.trim();
       const category = document.getElementById("categoryInput").value.trim().toLowerCase();
